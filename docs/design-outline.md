@@ -87,11 +87,11 @@ Additionally, the end user is someone experiencing an emergency under situationa
 ## Plan of action
 The steps below are outlined in Facebook's [Getting Started documentation](https://developers.facebook.com/docs/messenger-platform/getting-started).
 1. Set up webhook
-  - This is the core of the Messenger Platform integration. It is the point where messages are received, processed, sent. This is where the code will live that hits the SafeTrek API when the user wishes to generate an alert. The webhook handles the integration components described above.
+    - This is the core of the Messenger Platform integration. It is the point where messages are received, processed, sent. This is where the code will live that hits the SafeTrek API when the user wishes to generate an alert. The webhook handles the integration components described above.
 2. Set up FB app
-  - This is the connection between the Messenger front-end and the webhook. The webhook gets connected to the app, and the app is subscribed to a Page so that it can receive webhook events.
+    - This is the connection between the Messenger front-end and the webhook. The webhook gets connected to the app, and the app is subscribed to a Page so that it can receive webhook events.
 3. Build the bot
-  - This is the front-end of the SafeTrek integration. It will incorporate the conversation components and UX design principles described above.
+    - This is the front-end of the SafeTrek integration. It will incorporate the conversation components and UX design principles described above.
 
 ## Future extensions
 - The Messenger Platform supports a variety of advertising integrations. These can and should be leveraged to reach more people and let them know that this safety alert system is easily accessible in multiple formats.
