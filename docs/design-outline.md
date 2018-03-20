@@ -34,7 +34,7 @@ Additionally, the end user is someone experiencing an emergency under situationa
   - Be predictable: Use typing indicator to give in-progress status.
   - Notify with care: Most responses will assert a push notification.
   - Fail gracefully: if misunderstood request, reiterate capabilities. Failure = feedback, a chance to improve bot.
-  - Do not create a separate entity: This bot should eventually be attached to the [SafeTrek Facebook page](https://www.facebook.com/SafeTrek/) so that users can search for SafeTrek and easily start communicating with it. Because I am implementing separate from the company, I will stand up an independent page for testing.
+  - Do not create a separate entity: This bot should eventually be attached to the [SafeTrek Facebook page](https://www.facebook.com/SafeTrek/) so that users can search for SafeTrek and easily start communicating with it. Because I am implementing on my own at first, I will stand up an independent page for testing.
 
 #### Language (FB):
   - Familiarity, no new personality -> I will try to get my hands on some existing SafeTrek examples to mimic their responses where appropriate.
@@ -48,12 +48,13 @@ Additionally, the end user is someone experiencing an emergency under situationa
 
 ## Specific implementation and UI details:
 
-  - persistent menu with set of options (immediate alert - share location, start sharing details, general info)
+  - persistent menu with set of options
+  - quick and detail-oriented bot at beginning of conversation
   - typing indicator when processing/generating alert
   - conversation handover to real person
     - message to let the person know that transition is happening
 
-### FB integration components
+### Integration components (FB)
   - Page-scoped ID (PSID) unique to FB page. On each send, include recipient PSID in `recipient.id` property of request.
   - APIs:
     - Send API: for simple text, structured template messages, assets (images, videos, audio, files); quick replies, sender actions.
@@ -72,7 +73,7 @@ Additionally, the end user is someone experiencing an emergency under situationa
   - Messenger Webview: This webview allows more complex operations. It does not seem necessary at this stage, but there is an opportunity for future extensibility here.
   - Built-in natural language processing: [Wit.ai](https://wit.ai) can analyze message intents. This seems like a great way to infer the end user's goal. This will be able to be extended in the future to improve responses.
 
-### FB conversation components
+### Conversation components (FB)
   - Text Messages: basic text. Foundational building block of the chatbot. Must be conversational.
   - Message Templates: structure messages types (GUI in-conversation). The [button template](https://developers.facebook.com/docs/messenger-platform/send-messages/template/button) and [list template](https://developers.facebook.com/docs/messenger-platform/send-messages/template/list) seem quite useful here.
   - Quick Replies: present a set of options to end user. There should be one of these with an option to generate alert and share location when the user begins a conversation with SafeBot.
