@@ -79,7 +79,7 @@ function handleMessage(sender_psid, received_message) {
   let response;
 
   // Check if the message contains text
-  if (received_message.test) {
+  if (received_message.text) {
     // create payload for basic text message
     response = {
       "text": `You sent the message: "${received_message.text}". Now send an image.`
