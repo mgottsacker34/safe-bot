@@ -1,0 +1,24 @@
+{
+  "name": "messenger-webhook",
+  "version": "1.0.0",
+  "description": "Webhook for FB chatbot",
+  "engines": {
+    "node": "8.9.1"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.3",
+    "npm": "^5.7.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mgottsacker34/safe-bot"
+  }
+}
