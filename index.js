@@ -89,7 +89,7 @@ function handleMessage(sender_psid, received_message) {
     let lat = received_message.attachments[0].payload.lat;
     let long = received_message.attachments[0].payload.long;
     response = {
-        "text": "Location received. We are sending help. One of our call center employees will be on this conversation in a moment. \nIf you want, you can share your phone number and we will contact you that way."
+        "text": "Location received. We are sending help. One of our call center employees will be on this conversation in a moment. \nIf you want, you can share your phone number and we will contact you that way.",
         "quick_replies":[
           {
             "content_type":"user_phone_number"
@@ -99,7 +99,7 @@ function handleMessage(sender_psid, received_message) {
 
       console.info("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
     }
-    
+
   }
 
   // send the response message
