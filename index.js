@@ -84,34 +84,22 @@ function handleMessage(sender_psid, received_message) {
     response = {
       "text": `You sent the message: "${received_message.text}"`
     }
-  } else if (received_message.attachments) {
+  } else if (received_message.attachments.type === 'location') {
     //get the URL of the message attackment
-    let attachment_url = received_message.attachments[0].payload.url;
+    let lat = received_message.attachments[0].payload.lat;
+    let long = received_message.attachments[0].payload.long;
     response = {
-      "attachment": {
-        "type": "template",
-        "payload": {
-          "template_type": "generic",
-          "elements": [{
-            "title": "Is this the right picture?",
-            "subtitle": "Tap a button to answer.",
-            "image_url": attachment_url,
-            "buttons": [
-              {
-                "type": "postback",
-                "title": "Yes!",
-                "payload": "yes",
-              },
-              {
-                "type": "postback",
-                "title": "No!",
-                "payload": "no",
-              }
-            ],
-          }]
-        }
+      {
+        "text": "Location received. We are sending help. One of our call center employees will be on this conversation in a moment. \nIf you want, you can share your phone number and we will contact you that way."
+        "quick_replies":[
+          {
+            "content_type":"user_phone_number"
+          }
+        ]
       }
-    }
+    };
+
+    console.info("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
   }
 
   // send the response message
@@ -133,12 +121,17 @@ function handlePostback(sender_psid, received_postback) {
     response = { "text": "Sorry about that. Try sending another." };
   } else if (payload === 'get_started') {
     response = {
-      "text": "Hello! If you need help, press the button to share your location.",
+      "text": "Hello! If you need help, press the button below to share your location.",
       "quick_replies":[
         {
           "content_type":"location",
           "title": "Generate alert and share location",
           "payload": "alert_w_loc"
+        },
+        {
+          "content_type": "text",
+          "title": "I don't need help.",
+          "payload": "no_help_wanted"
         }
       ]
     };
