@@ -128,9 +128,11 @@ function handlePostback(sender_psid, received_postback) {
 
   // set appropriate response
   if (payload === 'yes') {
-    response = { "test": "Thanks!" };
+    response = { "text": "Thanks!" };
   } else if (payload === 'no') {
     response = { "text": "Sorry about that. Try sending another." };
+  } else if (payload === 'get_started') {
+    response = { "text": "Hello, {{user_first_name}}! How can we help you?" };
   }
   // send message to ack the postback
   callSendAPI(sender_psid, response);
