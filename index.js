@@ -95,11 +95,9 @@ function handleMessage(sender_psid, received_message) {
             "content_type":"user_phone_number"
           }
         ]
-      };
+    };
 
-      console.info("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
-    }
-
+    console.info("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
   }
 
   // send the response message
