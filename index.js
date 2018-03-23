@@ -123,19 +123,27 @@ function handlePostback(sender_psid, received_postback) {
   } else if (payload === 'no') {
     response = { "text": "Sorry about that. Try sending another." };
   } else if (payload === 'get_started') {
+    url_string "https://account-sandbox.safetrek.io/authorize?audience=https://api-sandbox.safetrek.io&client_id=" + process.env.CLIENT_ID + "&scope=openid%20phone%20offline_access&state=statecode&response_type=code&redirect_uri=https://safe-bot.herokuapp.com/webhook";
     response = {
-      "text": "Hello! If you need help, press the button below to share your location.",
-      "quick_replies":[
-        {
-          "content_type":"location",
-        },
-        {
-          "content_type": "text",
-          "title": "I don't need help.",
-          "payload": "no_help_wanted"
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": [{
+            "title": "Hello! If you need help, press the button below to login to SafeTrek.",
+            "buttons": [
+              {
+                "type": "web_url",
+                "title": "Login",
+                "url": url_string
+              }
+            ]
+          }]
         }
-      ]
+      }
     };
+  } else if (payload === 'safetrek_login') {
+
   }
   // send message to ack the postback
   callSendAPI(sender_psid, response);
