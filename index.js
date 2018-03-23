@@ -82,7 +82,7 @@ function handleMessage(sender_psid, received_message) {
   if (received_message.text) {
     // create payload for basic text message
     response = {
-      "text": `You sent the message: "${received_message.text}". Now send an image.`
+      "text": `You sent the message: "${received_message.text}"`
     }
   } else if (received_message.attachments) {
     //get the URL of the message attackment
@@ -132,7 +132,16 @@ function handlePostback(sender_psid, received_postback) {
   } else if (payload === 'no') {
     response = { "text": "Sorry about that. Try sending another." };
   } else if (payload === 'get_started') {
-    response = { "text": "Hello, {{user_first_name}}! How can we help you?" };
+    response = {
+      "text": "Hello! If you need help, press the button to share your location.",
+      "quick_replies":[
+        {
+          "content_type":"location",
+          "title": "Generate alert and share location",
+          "payload": "alert_w_loc"
+        }
+      ]
+    };
   }
   // send message to ack the postback
   callSendAPI(sender_psid, response);
