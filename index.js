@@ -84,10 +84,10 @@ function handleMessage(sender_psid, received_message) {
     response = {
       "text": `You sent the message: "${received_message.text}"`
     }
-  } else if (received_message.attachments.type === 'location') {
+  } else if (received_message.attachments.payload.coordinates) {
     //get the URL of the message attackment
-    let lat = received_message.attachments[0].payload.lat;
-    let long = received_message.attachments[0].payload.long;
+    let lat = received_message.attachments[0].payload.coordinates.lat;
+    let long = received_message.attachments[0].payload.coordinates.long;
     response = {
         "text": "Location received. We are sending help. One of our call center employees will be on this conversation in a moment. \nIf you want, you can share your phone number and we will contact you that way.",
         "quick_replies":[
@@ -123,8 +123,6 @@ function handlePostback(sender_psid, received_postback) {
       "quick_replies":[
         {
           "content_type":"location",
-          "title": "Generate alert and share location",
-          "payload": "alert_w_loc"
         },
         {
           "content_type": "text",
