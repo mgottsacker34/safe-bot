@@ -215,6 +215,8 @@ function handlePostback(sender_psid, received_postback) {
 }
 
 function retrieveSTAccessTok(safetrek_auth_code) {
+  console.log("RETRIEVING ACCESS TOKEN.");
+
   let request_body = {
     "grant_type": "authorization_code",
     "code": safetrek_auth_code,
@@ -233,14 +235,19 @@ function retrieveSTAccessTok(safetrek_auth_code) {
 
       console.log(body);
 
-      let info = JSON.parse(body);
-      let access_token = info.access_token;
-      let refresh_token = info.refresh_token;
-      let token_type = info.token_type;
-      let expires_in = info.expires_in;
-      let scope = info.scope;
+      // let info = JSON.parse(body);
+      let access_token = body.access_token;
+      let refresh_token = body.refresh_token;
+      let token_type = body.token_type;
+      let expires_in = body.expires_in;
+      let scope = body.scope;
 
       console.log("SafeTrek access token attained:" + access_token);
+      console.log("refresh_token:" + refresh_token);
+      console.log("token_type:" + token_type);
+      console.log("expires_in:" + expires_in);
+      console.log("scope:" + scope);
+
       safetrek_access_token = access_token;
       safetrek_refresh_token = refresh_token;
     } else {
