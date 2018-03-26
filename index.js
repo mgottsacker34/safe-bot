@@ -3,6 +3,7 @@
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 let safetrek_access_token;
 let safetrek_refresh_token;
+let services = [];
 
 // Import dependencies and set up http server
 const
@@ -76,8 +77,8 @@ app.get('/webhook', (req,res) => {
     }
   } else if (safetrek_auth_code) {
     console.log('SAFETREK AUTHORIZATION CODE RECEIVED: ' + safetrek_auth_code);
-    res.sendStatus(200);
     retrieveSTAccessTok(safetrek_auth_code);
+    res.sendStatus(200);
   }
 
 });
@@ -88,49 +89,69 @@ function handleMessage(sender_psid, received_message) {
 
   // Check if the message contains text
   if (received_message.text) {
-    if (received_message.text === 'info') {
+    if (received_message.text.toLowerCase() === 'info') {
       response = {
         "text": "SafeBot is here to help. If you experience an emergency, you can send \"help\" at any time. We will take you through steps to get the help you need and someone from SafeTrek will contact you. For specific situations, send \"police\", \"fire\", or \"medical\" to send an alert to the police, the fire department, or emergency medical services, respectively."
-      }
-    } else if (received_message.text === 'help') {
+      };
+    } else if (received_message.text.toLowerCase() === 'help') {
       response = {
-        "attachment": {
-          "type": "template",
-          "payload": {
-            "template_type": "generic",
-            "elements": [{
-              "title": "If you need help, press one of the buttons below. For more general information about SafeBot, type \"info\".",
-              "buttons": [
-                {
-                  "type": "postback",
-                  "title": "Police",
-                  "paylod": "police"
-                },
-                {
-                  "type": "postback",
-                  "title": "Fire",
-                  "paylod": "fire"
-                },
-                {
-                  "type": "postback",
-                  "title": "Medical",
-                  "paylod": "medical"
-                }
-              ]
-            }]
+        "text": "If you need help, press one of the buttons below. For more general information about SafeBot, type \"info\".",
+        "quick_replies": [
+          {
+            "content_type": "text",
+            "title": "Police",
+            "payload": "police"
+          },
+          {
+            "content_type": "text",
+            "title": "Fire",
+            "payload": "fire"
+          },
+          {
+            "content_type": "text",
+            "title": "Medical",
+            "payload": "medical"
           }
-        }
-
+        ]
       };
 
-    } else if (received_message.text === 'police') {
+    } else if (received_message.text.toLowerCase() === 'police') {
+      response = {
+        "text": "Share your location, or type \"fire\" or \"medical\" if you require those services as well.",
+        "quick_replies": [
+          {
+            "content_type": "location"
+          }
+        ]
+      };
 
-    } else if (received_message.text === 'fire') {
+      services.push("police");
 
-    } else if (received_message.text === 'medical') {
+    } else if (received_message.text.toLowerCase() === 'fire') {
+      response = {
+        "text": "Share your location, or type \"police\" or \"medical\" if you require those services as well.",
+        "quick_replies": [
+          {
+            "content_type": "location"
+          }
+        ]
+      };
+
+      services.push("fire");
+
+    } else if (received_message.text.toLowerCase() === 'medical') {
+      response = {
+        "text": "Share your location, or type \"police\" or \"fire\" if you require those services.",
+        "quick_replies": [
+          {
+            "content_type": "location"
+          }
+        ]
+      };
+
+      services.push("police");
 
     }
-
     // generic response when keyword is not sent
     else {
       // create payload for basic text message
@@ -141,7 +162,7 @@ function handleMessage(sender_psid, received_message) {
   } else if (received_message.attachments) {
     // case where attachment contains a location
     if (received_message.attachments[0].payload.coordinates) {
-      //get the URL of the message attackment
+      //get the URL of the message attachment
       let lat = received_message.attachments[0].payload.coordinates.lat;
       let long = received_message.attachments[0].payload.coordinates.long;
       response = {
@@ -154,6 +175,8 @@ function handleMessage(sender_psid, received_message) {
       };
 
       console.log("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
+
+      generateSafeTrekAlert(services, lat, long);
     }
   }
 
@@ -223,7 +246,7 @@ function retrieveSTAccessTok(safetrek_auth_code) {
     "client_id": process.env.CLIENT_ID,
     "client_secret": process.env.CLIENT_SECRET,
     "redirect_uri": "https://safe-bot.herokuapp.com/webhook"
-  }
+  };
 
   request({
     "uri": "https://login-sandbox.safetrek.io/oauth/token",
@@ -234,8 +257,7 @@ function retrieveSTAccessTok(safetrek_auth_code) {
     if (!err) {
 
       console.log(body);
-
-      // let info = JSON.parse(body);
+      /*
       let access_token = body.access_token;
       let refresh_token = body.refresh_token;
       let token_type = body.token_type;
@@ -247,13 +269,53 @@ function retrieveSTAccessTok(safetrek_auth_code) {
       console.log("token_type:" + token_type);
       console.log("expires_in:" + expires_in);
       console.log("scope:" + scope);
+      */
 
-      safetrek_access_token = access_token;
-      safetrek_refresh_token = refresh_token;
+      safetrek_access_token = body.access_token;
+      safetrek_refresh_token = body.refresh_token;
     } else {
       console.error("Unable to attain SafeTrek access token:" + err);
     }
   });
+}
+
+function generateSafeTrekAlert(services, lat, long) {
+   let police = services.includes('police');
+   let fire = services.includes('fire');
+   let medical = services.includes('medical');
+
+   let auth_string = "Bearer " + safetrek_access_token;
+
+   let request_body = {
+     "services": {
+       "police": police,
+       "fire": fire,
+       "medical": medical
+     },
+     "location.coordinates": {
+       "lat": lat,
+       "lng": long,
+       "accuracy": 5
+     }
+   };
+
+   request({
+     "uri": "https://api-sandbox.safetrek.io/v1/alarms",
+     "headers": {
+       "Authoriation": auth_string,
+       "Content-Type: application/json"
+     }
+     "method": "POST",
+     "json": request_body
+   }, (err, res, body) => {
+     if(!err) {
+       console.log("ALARM POSTED.");
+       console.log(body);
+       services = [];
+     } else {
+       console.error("Unable to post alarm:" + err);
+     }
+   });
 }
 
 // Send response messages via the Send API
