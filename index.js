@@ -224,7 +224,7 @@ function retrieveSTAccessTok(safetrek_auth_code) {
   }
 
   request({
-    "uri": "https://login.safetrek.io/oauth/token",
+    "uri": "https://login-sandbox.safetrek.io/oauth/token",
     "headers": "Content-Type: application/json",
     "method": "POST",
     "json": request_body
