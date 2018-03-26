@@ -302,13 +302,13 @@ function generateSafeTrekAlert(services, lat, long) {
    request({
      "uri": "https://api-sandbox.safetrek.io/v1/alarms",
      "headers": {
-       "Authoriation": auth_string,
+       "Authorization": auth_string,
        "Content-Type": "application/json"
      },
      "method": "POST",
      "json": request_body
    }, (err, res, body) => {
-     if(!err) {
+     if (!err) {
        console.log("ALARM POSTED.");
        console.log(body);
        services = [];
