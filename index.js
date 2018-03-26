@@ -111,9 +111,11 @@ function handleMessage(sender_psid, received_message) {
                   "title": "Fire",
                   "paylod": "fire"
                 },
-                "type": "postback",
-                "title": "Medical",
-                "paylod": "medical"
+                {
+                  "type": "postback",
+                  "title": "Medical",
+                  "paylod": "medical"
+                }
               ]
             }]
           }
