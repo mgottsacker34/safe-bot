@@ -2,7 +2,7 @@
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 let safetrek_access_token;
-let refresh_token;
+let safetrek_refresh_token;
 
 // Import dependencies and set up http server
 const
