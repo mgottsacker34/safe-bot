@@ -63,13 +63,14 @@ app.get('/webhook', (req,res) => {
   let challenge = req.query['hub.challenge'];
 
   let safetrek_auth_code = req.query.code;
+  let safetrek_refresh_code = req.query.refresh_token;
 
   // Checks if a token and mode is in the query string of the request
   if (mode && token) {
     // Checks that the mode and token sent are correct
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       // Responds with the challenge token from the request
-      console.log('WEBHOOK_VERIFIED');
+      console.log('WEBHOOK_VERIFIED.');
       res.status(200).send(challenge);
     } else {
       // Reponds with '403 Forbidden' if verify tokens do not match
@@ -77,8 +78,56 @@ app.get('/webhook', (req,res) => {
     }
   } else if (safetrek_auth_code) {
     console.log('SAFETREK AUTHORIZATION CODE RECEIVED: ' + safetrek_auth_code);
-    retrieveSTAccessTok(safetrek_auth_code);
-    res.sendStatus(200);
+    console.log("RETRIEVING ACCESS TOKEN.");
+    let request_body = {
+      "grant_type": "authorization_code",
+      "code": safetrek_auth_code,
+      "client_id": process.env.CLIENT_ID,
+      "client_secret": process.env.CLIENT_SECRET,
+      "redirect_uri": "https://safe-bot.herokuapp.com/webhook"
+    };
+
+    request({
+      "uri": "https://login-sandbox.safetrek.io/oauth/token",
+      "headers": "Content-Type: application/json",
+      "method": "POST",
+      "json": request_body
+    }, (err, res, body) => {
+      if (!err) {
+        console.log(body);
+        safetrek_access_token = body.access_token;
+        safetrek_refresh_token = body.refresh_token;
+        res.status(200).send('Authorization success. Close this window.');
+      } else {
+        console.error("Unable to attain SafeTrek access token:" + err);
+        res.status(500).send('Internal Server Error. Something went wrong. Please try again');
+      }
+    });
+  } else if (safetrek_refresh_code) {
+    console.log('REFRESHING TOKEN.');
+    let request_body = {
+      "grant_type": "refresh_token",
+      "code": safetrek_refresh_code,
+      "client_id": process.env.CLIENT_ID,
+      "client_secret": process.env.CLIENT_SECRET,
+    };
+
+    request({
+      "uri": "https://login-sandbox.safetrek.io/oauth/token",
+      "headers": "Content-Type: application/json",
+      "method": "POST",
+      "json": request_body
+    }, (err, res, body) => {
+      if (!err) {
+        console.log(body);
+        safetrek_access_token = body.access_token;
+        safetrek_refresh_token = body.refresh_token;
+        res.status(200).send('Authorization success.');
+      } else {
+        console.error("Unable to attain SafeTrek access token:" + err);
+        res.status(500).send('Internal Server Error. Something went wrong. Please try again');
+      }
+    });
   }
 
 });
