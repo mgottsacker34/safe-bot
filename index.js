@@ -1,6 +1,8 @@
 'use strict';
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+let safetrek_access_token;
+let refresh_token;
 
 // Import dependencies and set up http server
 const
@@ -52,12 +54,14 @@ app.post('/webhook', (req, res) => {
 app.get('/webhook', (req,res) => {
 
   // Your verify token. Should be a random string.
-  let VERIFY_TOKEN = "CKTN8VHHKG"
+  let VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 
   // Parse the query params
   let mode = req.query['hub.mode'];
   let token = req.query['hub.verify_token'];
   let challenge = req.query['hub.challenge'];
+
+  let safetrek_auth_code = req.query.code;
 
   // Checks if a token and mode is in the query string of the request
   if (mode && token) {
@@ -70,8 +74,10 @@ app.get('/webhook', (req,res) => {
       // Reponds with '403 Forbidden' if verify tokens do not match
       res.sendStatus(403);
     }
-  } else {
+  } else if (safetrek_auth_code) {
+    console.log('SAFETREK AUTHORIZATION CODE RECEIVED: ' + safetrek_auth_code);
     res.sendStatus(200);
+    retrieveSTAccessTok(safetrek_auth_code);
   }
 
 });
@@ -82,9 +88,53 @@ function handleMessage(sender_psid, received_message) {
 
   // Check if the message contains text
   if (received_message.text) {
-    // create payload for basic text message
-    response = {
-      "text": `You sent the message: "${received_message.text}"`
+    if (received_message.text === 'info') {
+      response = {
+        "text": "SafeBot is here to help. If you experience an emergency, you can send \"help\" at any time. We will take you through steps to get the help you need and someone from SafeTrek will contact you. For specific situations, send \"police\", \"fire\", or \"medical\" to send an alert to the police, the fire department, or emergency medical services, respectively."
+      }
+    } else if (received_message.text === 'help') {
+      response = {
+        "attachment": {
+          "type": "template",
+          "payload": {
+            "template_type": "generic",
+            "elements": [{
+              "title": "If you need help, press one of the buttons below. For more general information about SafeBot, type \"info\".",
+              "buttons": [
+                {
+                  "type": "postback",
+                  "title": "Police",
+                  "paylod": "police"
+                },
+                {
+                  "type": "postback",
+                  "title": "Fire",
+                  "paylod": "fire"
+                },
+                "type": "postback",
+                "title": "Medical",
+                "paylod": "medical"
+              ]
+            }]
+          }
+        }
+
+      };
+
+    } else if (received_message.text === 'police') {
+
+    } else if (received_message.text === 'fire') {
+
+    } else if (received_message.text === 'medical') {
+
+    }
+
+    // generic response when keyword is not sent
+    else {
+      // create payload for basic text message
+      response = {
+        "text": `You sent the message: "${received_message.text}"`
+      }
     }
   } else if (received_message.attachments) {
     // case where attachment contains a location
@@ -123,6 +173,8 @@ function handlePostback(sender_psid, received_postback) {
   } else if (payload === 'no') {
     response = { "text": "Sorry about that. Try sending another." };
   } else if (payload === 'get_started') {
+
+    // When get_started is returned, it is the first time the user interacts with SafeBot. Need to log in.
     let url_string = "https://account-sandbox.safetrek.io/authorize?audience=https://api-sandbox.safetrek.io&client_id=" + process.env.CLIENT_ID + "&scope=openid%20phone%20offline_access&state=statecode&response_type=code&redirect_uri=https://safe-bot.herokuapp.com/webhook";
     response = {
       "attachment": {
@@ -130,7 +182,7 @@ function handlePostback(sender_psid, received_postback) {
         "payload": {
           "template_type": "generic",
           "elements": [{
-            "title": "Hello! If you need help, press the button below to login to SafeTrek.",
+            "title": "Hello! If you need help, press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time.",
             "buttons": [
               {
                 "type": "web_url",
@@ -142,11 +194,55 @@ function handlePostback(sender_psid, received_postback) {
         }
       }
     };
+
+
   } else if (payload === 'safetrek_login') {
 
+  } else if (payload === 'police') {
+
+  } else if (payload === 'fire') {
+
+  } else if (payload === 'medical') {
+
+  } else if (payload === 'no_help_wanted') {
+
   }
+
   // send message to ack the postback
   callSendAPI(sender_psid, response);
+}
+
+function retrieveSTAccessTok(safetrek_auth_code) {
+  let request_body = {
+    "grant_type": "authorization_code",
+    "code": safetrek_auth_code,
+    "client_id": process.env.CLIENT_ID,
+    "client_secret": process.env.CLIENT_SECRET,
+    "redirect_uri": "https://safe-bot.herokuapp.com/webhook"
+  }
+
+  request({
+    "uri": "https://login.safetrek.io/oauth/token",
+    "headers": "Content-Type: application/json",
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+
+      let info = JSON.parse(body);
+      let access_token = info.access_token;
+      let refresh_token = info.refresh_token;
+      let token_type = info.token_type;
+      let expires_in = info.expires_in;
+      let scope = info.scope;
+
+      console.log("SafeTrek access token attained:" + access_token);
+      safetrek_access_token = access_token;
+      safetrek_refresh_token = refresh_token;
+    } else {
+      console.error("Unable to attain SafeTrek access token:" + err);
+    }
+  });
 }
 
 // Send response messages via the Send API
