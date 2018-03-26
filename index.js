@@ -304,7 +304,7 @@ function generateSafeTrekAlert(services, lat, long) {
      "headers": {
        "Authoriation": auth_string,
        "Content-Type": "application/json"
-     }
+     },
      "method": "POST",
      "json": request_body
    }, (err, res, body) => {
