@@ -303,7 +303,7 @@ function generateSafeTrekAlert(services, lat, long) {
      "uri": "https://api-sandbox.safetrek.io/v1/alarms",
      "headers": {
        "Authoriation": auth_string,
-       "Content-Type: application/json"
+       "Content-Type": "application/json"
      }
      "method": "POST",
      "json": request_body
