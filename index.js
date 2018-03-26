@@ -111,11 +111,17 @@ function handleMessage(sender_psid, received_message) {
             "content_type": "text",
             "title": "Medical",
             "payload": "medical"
+          },
+          {
+            "content_type": "text",
+            "title": "I'm okay",
+            "payload": "no_help_wanted"
           }
         ]
       };
 
     } else if (received_message.text.toLowerCase() === 'police') {
+      services.push("police");
       response = {
         "text": "Share your location, or type \"fire\" or \"medical\" if you require those services as well.",
         "quick_replies": [
@@ -125,9 +131,8 @@ function handleMessage(sender_psid, received_message) {
         ]
       };
 
-      services.push("police");
-
     } else if (received_message.text.toLowerCase() === 'fire') {
+      services.push('fire');
       response = {
         "text": "Share your location, or type \"police\" or \"medical\" if you require those services as well.",
         "quick_replies": [
@@ -137,9 +142,8 @@ function handleMessage(sender_psid, received_message) {
         ]
       };
 
-      services.push("fire");
-
     } else if (received_message.text.toLowerCase() === 'medical') {
+      services.push('medical');
       response = {
         "text": "Share your location, or type \"police\" or \"fire\" if you require those services.",
         "quick_replies": [
@@ -148,8 +152,6 @@ function handleMessage(sender_psid, received_message) {
           }
         ]
       };
-
-      services.push("police");
 
     }
     // generic response when keyword is not sent
@@ -166,12 +168,12 @@ function handleMessage(sender_psid, received_message) {
       let lat = received_message.attachments[0].payload.coordinates.lat;
       let long = received_message.attachments[0].payload.coordinates.long;
       response = {
-          "text": "Location received. We are sending help. One of our call center employees will be on this conversation in a moment. \nIf you want, you can share your phone number and we will contact you that way.",
-          "quick_replies":[
-            {
-              "content_type":"user_phone_number"
-            }
-          ]
+          "text": "Location received. We are sending help. One of our call center employees will contact you in a moment. If you want to cancel this alert, just type \"cancel\".",
+          // "quick_replies":[
+          //   {
+          //     "content_type":"user_phone_number"
+          //   }
+          // ]
       };
 
       console.log("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
@@ -207,7 +209,7 @@ function handlePostback(sender_psid, received_postback) {
         "payload": {
           "template_type": "generic",
           "elements": [{
-            "title": "Hello! If you need help, press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time.",
+            "title": "Press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time.",
             "buttons": [
               {
                 "type": "web_url",
@@ -257,24 +259,71 @@ function retrieveSTAccessTok(safetrek_auth_code) {
     if (!err) {
 
       console.log(body);
-      /*
-      let access_token = body.access_token;
-      let refresh_token = body.refresh_token;
-      let token_type = body.token_type;
-      let expires_in = body.expires_in;
-      let scope = body.scope;
-
-      console.log("SafeTrek access token attained:" + access_token);
-      console.log("refresh_token:" + refresh_token);
-      console.log("token_type:" + token_type);
-      console.log("expires_in:" + expires_in);
-      console.log("scope:" + scope);
-      */
 
       safetrek_access_token = body.access_token;
       safetrek_refresh_token = body.refresh_token;
     } else {
       console.error("Unable to attain SafeTrek access token:" + err);
+    }
+  });
+}
+
+function updateAlarmLoc(lat, long, alarm_id) {
+
+  let request_body = {
+    "coordinates": {
+      "lat": lat,
+      "lng": long,
+      "accuracy": 5
+    }
+  }
+
+  let request_uri = "https://api-sandbox.safetrek.io/v1/alarms/" + alarm_id + "/locations";
+  let auth_string = "Bearer " + safetrek_access_token;
+
+  request({
+    "uri": request_uri,
+    "headers": {
+      "Authorization": auth_string,
+      "Content-Type": "application/json"
+    },
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log("LOCATION UPDATED.");
+      console.log(body);
+      services = [];
+    } else {
+      console.error("Unable to update location:" + err);
+    }
+  });
+}
+
+function cancelAlarm(status) {
+
+  let request_body = {
+    "status": "CANCELED"
+  };
+
+  let request_uri = "https://api-sandbox.safetrek.io/v1/alarms/" + alarm_id + "/status";
+  let auth_string = "Bearer " + safetrek_access_token;
+
+  request({
+    "uri": request_uri,
+    "headers": {
+      "Authorization": auth_string,
+      "Content-Type": "application/json"
+    },
+    "method": "PUT",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log("ALARM POSTED.");
+      console.log(body);
+      services = [];
+    } else {
+      console.error("Unable to post alarm:" + err);
     }
   });
 }
