@@ -231,6 +231,8 @@ function retrieveSTAccessTok(safetrek_auth_code) {
   }, (err, res, body) => {
     if (!err) {
 
+      console.log(body);
+
       let info = JSON.parse(body);
       let access_token = info.access_token;
       let refresh_token = info.refresh_token;
