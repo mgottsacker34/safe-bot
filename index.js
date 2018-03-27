@@ -6,6 +6,7 @@ let safetrek_access_token;
 let safetrek_refresh_token;
 let services = [];
 let alarm_id;
+let alarm_loc;
 
 // Import dependencies and set up http server
 const
@@ -215,6 +216,38 @@ function handleMessage (sender_psid, received_message) {
           "text": "There is no alarm to cancel."
         }
       }
+    } else if (received_message.text.toLowerCase() === 'location') {
+      if (alarm_id) {  // existing alarm, update
+        response = {
+          "text": "Please share your new location.",
+          "quick_replies": [
+            {
+              "content_type": "location"
+            }
+          ]
+        };
+      } else {  // no alarm in existence, start one
+        response = {
+          "text": "We will dispatch help to your location.",
+          "quick_replies": [
+            {
+              "content_type": "location"
+            }
+          ]
+        };
+        services.push('police');
+      }
+    } else if (received_message.text.toLowerCase() === "i'm okay") {
+      if (alarm_id) {
+        cancelAlarm(alarm_id);
+        response = {
+          "text": "Great! Glad to hear it. We canceled your alarm."
+        }
+      } else {
+        response = {
+          "text": "Great! Don't hesitate to reach out if you ever need help."
+        }
+      }
     }
     // generic response when keyword is not sent (echo back to user - dev only)
     else {
@@ -225,21 +258,24 @@ function handleMessage (sender_psid, received_message) {
   } else if (received_message.attachments) {
     // case where attachment contains a location
     if (received_message.attachments[0].payload.coordinates) {
-      //get the URL of the message attachment
       let lat = received_message.attachments[0].payload.coordinates.lat;
       let long = received_message.attachments[0].payload.coordinates.long;
-      response = {
-          "text": "Location received. We are sending help. One of our call center employees will contact you in a moment. If you want to cancel this alert, just type \"cancel\".",
-          // "quick_replies":[
-          //   {
-          //     "content_type":"user_phone_number"
-          //   }
-          // ]
-      };
-
-      console.log("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
-
-      generateSafeTrekAlert(services, lat, long);
+      // handle case where alarm location has not been set
+      if (!alarm_id) {
+        //get the URL of the message attachment
+        response = {
+            "text": "Location received. We are sending help. One of our call center employees will contact you in a moment. If you want to cancel this alert, just type \"cancel\".",
+        };
+        console.log("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
+        generateSafeTrekAlert(services, lat, long);
+      } else {
+        // alarm location has already been set, need to update it
+        response = {
+            "text": "Location updated. We have notified the responders.",
+        };
+        console.log("UPDATE LOCATION to:\nLat: " + lat + "\nLong: " + long);
+        updateAlarmLoc(lat, long, alarm_id);
+      }
     }
   }
   typingOff();
