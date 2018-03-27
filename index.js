@@ -92,7 +92,7 @@ app.get('/webhook', (req,res) => {
       "headers": "Content-Type: application/json",
       "method": "POST",
       "json": request_body
-    }, (err, res, body) => {
+    }, (err, response, body) => {
       if (!err) {
         console.log(body);
         safetrek_access_token = body.access_token;
@@ -105,29 +105,7 @@ app.get('/webhook', (req,res) => {
     });
   } else if (safetrek_refresh_code) {
     console.log('REFRESHING TOKEN.');
-    let request_body = {
-      "grant_type": "refresh_token",
-      "code": safetrek_refresh_code,
-      "client_id": process.env.CLIENT_ID,
-      "client_secret": process.env.CLIENT_SECRET,
-    };
 
-    request({
-      "uri": "https://login-sandbox.safetrek.io/oauth/token",
-      "headers": "Content-Type: application/json",
-      "method": "POST",
-      "json": request_body
-    }, (err, res, body) => {
-      if (!err) {
-        console.log(body);
-        safetrek_access_token = body.access_token;
-        safetrek_refresh_token = body.refresh_token;
-        res.status(200).send('Authorization success.');
-      } else {
-        console.error("Unable to attain SafeTrek access token:" + err);
-        res.status(500).send('Internal Server Error. Something went wrong. Please try again');
-      }
-    });
   }
 
 });
@@ -273,6 +251,23 @@ function handlePostback(sender_psid, received_postback) {
 
 
   } else if (payload === 'safetrek_login') {
+    // user needs to log in again (refresh)
+    let url_string = "https://account-sandbox.safetrek.io/authorize?audience=https://api-sandbox.safetrek.io&client_id=" + process.env.CLIENT_ID + "&scope=openid%20phone%20offline_access&state=statecode&response_type=code&redirect_uri=https://safe-bot.herokuapp.com/webhook";
+    response = {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "button",
+          "text": "If you need help, press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time.",
+          "buttons": [
+            {
+              "type": "account_link",
+              "url": url_string
+            }
+          ]
+        }
+      }
+    };
 
   } else if (payload === 'police') {
 
@@ -313,6 +308,33 @@ function retrieveSTAccessTok(safetrek_auth_code) {
       safetrek_refresh_token = body.refresh_token;
     } else {
       console.error("Unable to attain SafeTrek access token:" + err);
+    }
+  });
+}
+
+function refreshSafeTrekTok () {
+  let request_body = {
+    "grant_type": "refresh_token",
+    "code": safetrek_refresh_code,
+    "client_id": process.env.CLIENT_ID,
+    "client_secret": process.env.CLIENT_SECRET,
+  };
+
+  request({
+    "uri": "https://login-sandbox.safetrek.io/oauth/token",
+    "headers": "Content-Type: application/json",
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log(body);
+      safetrek_access_token = body.access_token;
+      // the response does not contain a refresh_token ?
+      // safetrek_refresh_token = body.refresh_token;
+      res.status(200).send('Authorization success.');
+    } else {
+      console.error("Unable to attain SafeTrek access token:" + err);
+      res.status(500).send('Internal Server Error. Something went wrong. Please try again');
     }
   });
 }
