@@ -7,7 +7,7 @@ let sender_psid;
 let safetrek_access_token;
 let safetrek_refresh_token;
 let services = [];
-let alarm_id = null;
+let alarm_id = "";
 let alarm_loc;
 
 // Import dependencies and set up http server
@@ -214,8 +214,8 @@ function handleMessage (sender_psid, received_message) {
         }
       };
     } else if (received_message.text.toLowerCase() === 'cancel') {
-      if (this.alarm_id) {
-        cancelAlarm(this.alarm_id);
+      if (alarm_id.length > 0) {
+        cancelAlarm(alarm_id);
         response = {
           "text": "Alarm canceled."
         }
@@ -269,7 +269,7 @@ function handleMessage (sender_psid, received_message) {
       let lat = received_message.attachments[0].payload.coordinates.lat;
       let long = received_message.attachments[0].payload.coordinates.long;
       // handle case where alarm location has not been set
-      if (alarm_id == null || alarm_id == undefined) {
+      if (alarm_id.len == 0) {
         console.log("New:" + alarm_id + " " + alarm_loc);
         //get the URL of the message attachment
         response = {
@@ -454,8 +454,7 @@ function cancelAlarm (alarm_id) {
       console.log("ALARM CANCELED.");
       console.log(body);
       services = [];
-      this.alarm_id = null;
-      this.alarm_loc = null;
+      alarm_id = "";
     } else {
       console.error("Unable to cancel alarm:" + err);
     }
@@ -494,7 +493,7 @@ function generateSafeTrekAlert (services, lat, long) {
      if (!err) {
        console.log("ALARM POSTED.");
        console.log(body);
-       this.alarm_id = body.id;
+       alarm_id = body.id;
        services = []; // clear services array for new request
      } else {
        console.error("Unable to post alarm:" + err);
