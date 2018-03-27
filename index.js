@@ -451,12 +451,12 @@ function cancelAlarm (alarm_id) {
       console.log("ALARM CANCELED.");
       console.log(body);
       services = [];
+      alarm_id = null;
+      alarm_loc = null;
     } else {
       console.error("Unable to cancel alarm:" + err);
     }
   });
-  alarm_id = null;
-  alarm_loc = null;
 }
 
 function generateSafeTrekAlert (services, lat, long) {
