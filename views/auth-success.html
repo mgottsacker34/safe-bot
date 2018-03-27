@@ -1,6 +1,24 @@
 <html>
 
 <body>
+  <script>
+
+  (function(d, s, id){
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) {return;}
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.com/en_US/messenger.Extensions.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'Messenger'));
+
+  window.extAsyncInit = function () {
+    MessengerExtensions.requestCloseBrowser(function success() {
+      console.log("Webview closed.");
+    }, function error(err) {
+      console.log("Error closing webview.");
+    });
+  };
+  </script>
   <h1>Authorization successful!</h1>
 </body>
 </html>
