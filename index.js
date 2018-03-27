@@ -103,6 +103,11 @@ app.get('/webhook', (req,res) => {
         safetrek_access_token = body.access_token;
         safetrek_refresh_token = body.refresh_token;
         res.status(200).send('Authorization success. Close this window.');
+        MessengerExtensions.requestCloseBrowser(function success() {
+          console.log("Closed webview.");
+        }, function error(err) {
+          console.log("Error closing webview.");
+        });
         let response = {
           "text": "Successful login.  To start an alert, type \'help\'."
         }
