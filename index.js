@@ -90,7 +90,7 @@ app.get('/webhook', (req,res) => {
       "code": safetrek_auth_code,
       "client_id": process.env.CLIENT_ID,
       "client_secret": process.env.CLIENT_SECRET,
-      "redirect_uri": "https://www.messenger.com/closeWindow/"
+      "redirect_uri": "https://safe-bot.herokuapp.com/webhook"
     };
 
     request({
@@ -103,7 +103,7 @@ app.get('/webhook', (req,res) => {
         console.log(body);
         safetrek_access_token = body.access_token;
         safetrek_refresh_token = body.refresh_token;
-        res.status(200).send('Authorization success. Close this window.');
+        res.status(200).sendFile(__dirname + "/views/auth-success.html");
 
         let response = {
           "text": "Successful login.  To start an alert, type \'help\'."
