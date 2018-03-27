@@ -164,7 +164,7 @@ function handleMessage (sender_psid, received_message) {
     } else if (received_message.text.toLowerCase() === 'police') {
       services.push("police");
       response = {
-        "text": "Share your location, or type \'fire\' or \"medical\' if you require those services as well.",
+        "text": "Share your location, or type \'fire\' or \'medical\' if you require those services as well.",
         "quick_replies": [
           {
             "content_type": "location"
