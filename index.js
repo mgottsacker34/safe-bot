@@ -268,8 +268,8 @@ function handleMessage (sender_psid, received_message) {
       let lat = received_message.attachments[0].payload.coordinates.lat;
       let long = received_message.attachments[0].payload.coordinates.long;
       // handle case where alarm location has not been set
-      console.log("\n\n" + alarm_id.len + "\n\n")
-      if (alarm_id.len < 2) {
+      console.log("\n\n" + alarm_id.length + "\n\n")
+      if (alarm_id.length < 2) {
         console.log("New:" + alarm_id);
         //get the URL of the message attachment
         response = {
