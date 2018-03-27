@@ -456,6 +456,7 @@ function cancelAlarm (alarm_id) {
     }
   });
   alarm_id = null;
+  alarm_loc = null;
 }
 
 function generateSafeTrekAlert (services, lat, long) {
