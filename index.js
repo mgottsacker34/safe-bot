@@ -316,8 +316,6 @@ function handlePostback (sender_psid, received_postback) {
               "url": url_string,
               "title": "Login Button",
               "webview_height_ratio": "full",
-              "messenger_extensions": "true",
-              "fallback_url": url_string,
               "webview_share_button": "hide"
             }
           ]
