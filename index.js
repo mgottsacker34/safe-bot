@@ -12,6 +12,7 @@ let alarm_loc;
 // Import dependencies and set up http server
 const
   express = require('express'),
+  path = require('path'),
   bodyParser = require('body-parser'),
   request = require('request'),
   app = express().use(bodyParser.json()); // creates express http server
@@ -58,7 +59,7 @@ app.post('/webhook', (req, res) => {
 // Add support for GET requests to the webhook
 app.get('/webhook', (req,res) => {
 
-  // Your verify token. Should be a random string.
+  // FB verify token. Should be a random string.
   let VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 
   // Parse the query params
@@ -89,7 +90,7 @@ app.get('/webhook', (req,res) => {
       "code": safetrek_auth_code,
       "client_id": process.env.CLIENT_ID,
       "client_secret": process.env.CLIENT_SECRET,
-      "redirect_uri": "https://safe-bot.herokuapp.com/webhook"
+      "redirect_uri": "https://www.messenger.com/closeWindow/"
     };
 
     request({
@@ -103,7 +104,7 @@ app.get('/webhook', (req,res) => {
         safetrek_access_token = body.access_token;
         safetrek_refresh_token = body.refresh_token;
         res.status(200).send('Authorization success. Close this window.');
-        
+
         let response = {
           "text": "Successful login.  To start an alert, type \'help\'."
         }
