@@ -316,7 +316,7 @@ function handlePostback (sender_psid, received_postback) {
               "title": "Login",
               "url": url_string,
               "messenger_extensions": "true",
-              "fallback_url": "https://safe-bot.herokuapp.com/webhook"
+              
             }
           ]
         }
