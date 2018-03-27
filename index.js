@@ -214,8 +214,8 @@ function handleMessage (sender_psid, received_message) {
         }
       };
     } else if (received_message.text.toLowerCase() === 'cancel') {
-      if (alarm_id) {
-        cancelAlarm(alarm_id);
+      if (this.alarm_id) {
+        cancelAlarm(this.alarm_id);
         response = {
           "text": "Alarm canceled."
         }
@@ -494,7 +494,7 @@ function generateSafeTrekAlert (services, lat, long) {
      if (!err) {
        console.log("ALARM POSTED.");
        console.log(body);
-       alarm_id = body.id;
+       this.alarm_id = body.id;
        services = []; // clear services array for new request
      } else {
        console.error("Unable to post alarm:" + err);
