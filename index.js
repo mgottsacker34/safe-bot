@@ -269,10 +269,9 @@ function handlePostback(sender_psid, received_postback) {
       "attachment": {
         "type": "template",
         "payload": {
-          "template_type": "generic",
+          "template_type": "button",
           "text": "Press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time. To start an alert, type \"help\".",
           "elements": [{
-
             "buttons": [
               {
                 "type": "web_url",
