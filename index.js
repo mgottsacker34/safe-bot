@@ -314,7 +314,9 @@ function handlePostback (sender_psid, received_postback) {
             {
               "type": "web_url",
               "title": "Login",
-              "url": url_string
+              "url": url_string,
+              "messenger_extensions": "true",
+              "fallback_url": "https://safe-bot.herokuapp.com/webhook"
             }
           ]
         }
