@@ -180,6 +180,24 @@ function handleMessage(sender_psid, received_message) {
         ]
       };
 
+    } else if (received_message.text.toLowerCase() === 'login') {
+      // user needs to log in again (refresh)
+      let url_string = "https://account-sandbox.safetrek.io/authorize?audience=https://api-sandbox.safetrek.io&client_id=" + process.env.CLIENT_ID + "&scope=openid%20phone%20offline_access&state=statecode&response_type=code&redirect_uri=https://safe-bot.herokuapp.com/webhook";
+      response = {
+        "attachment": {
+          "type": "template",
+          "payload": {
+            "template_type": "button",
+            "text": "If you need help, press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time.",
+            "buttons": [
+              {
+                "type": "account_link",
+                "url": url_string
+              }
+            ]
+          }
+        }
+      };
     }
     // generic response when keyword is not sent
     else {
