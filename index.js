@@ -314,9 +314,7 @@ function handlePostback (sender_psid, received_postback) {
             {
               "type": "web_url",
               "title": "Login",
-              "url": url_string,
-              "messenger_extensions": "true",
-              
+              "url": url_string
             }
           ]
         }
