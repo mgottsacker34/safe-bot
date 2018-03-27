@@ -2,6 +2,7 @@
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 // In production, these tokens and alarm details should be saved in a DB keyed on the user's unique PSID.
+let sender_psid;
 let safetrek_access_token;
 let safetrek_refresh_token;
 let services = [];
@@ -34,7 +35,7 @@ app.post('/webhook', (req, res) => {
       // console.log(webhook_event);
 
       // Get sender PSID
-      let sender_psid = webhook_event.sender.id;
+      sender_psid = webhook_event.sender.id;
       console.log('Sender PSID: ' + sender_psid);
 
       // Check if the event is a message or postback and act accordingly
@@ -102,6 +103,10 @@ app.get('/webhook', (req,res) => {
         safetrek_access_token = body.access_token;
         safetrek_refresh_token = body.refresh_token;
         res.status(200).send('Authorization success. Close this window.');
+        let response = {
+          "text": "Successful login.  To start an alert, type \'help\'."
+        }
+        callSendAPI(sender_psid, response);
       } else {
         console.error("Unable to attain SafeTrek access token:" + err);
         res.status(500).send('Internal Server Error. Something went wrong. Please try again');
@@ -111,14 +116,13 @@ app.get('/webhook', (req,res) => {
     console.log('REFRESHING TOKEN.');
 
   }
-
 });
 
 // Handle message events
 function handleMessage (sender_psid, received_message) {
   // set Seen indicator and begin processing
-  markSeen();
-  typingOn();
+  markSeen(sender_psid);
+  typingOn(sender_psid);
 
   let response;
 
@@ -279,15 +283,15 @@ function handleMessage (sender_psid, received_message) {
       }
     }
   }
-  typingOff();
+  typingOff(sender_psid);
   // send the response message
   callSendAPI(sender_psid, response);
 }
 
 // Handle messaging_postbacks events
 function handlePostback (sender_psid, received_postback) {
-  markSeen();
-  typingOn();
+  markSeen(sender_psid);
+  typingOn(sender_psid);
   let response;
 
   // get the payload for the postback
@@ -303,7 +307,7 @@ function handlePostback (sender_psid, received_postback) {
         "type": "template",
         "payload": {
           "template_type": "button",
-          "text": "Press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time. To start an alert, type \"help\".",
+          "text": "Press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \'info\' at any time.",
           "buttons": [
             {
               "type": "web_url",
@@ -314,17 +318,15 @@ function handlePostback (sender_psid, received_postback) {
         }
       }
     };
-
-
-  } else if (payload === 'safetrek_login') {
-    // user needs to log in again (refresh)
+  } else if (payload === 'safetrek_login') {  // never gets called. Can adjust payload of Get Started button to hit this instead of get_started when implemented. Develop this functionality and test by typing 'login' and sending as message.
+    // user needs to log in
     let url_string = "https://account-sandbox.safetrek.io/authorize?audience=https://api-sandbox.safetrek.io&client_id=" + process.env.CLIENT_ID + "&scope=openid%20phone%20offline_access&state=statecode&response_type=code&redirect_uri=https://safe-bot.herokuapp.com/webhook";
     response = {
       "attachment": {
         "type": "template",
         "payload": {
           "template_type": "button",
-          "text": "If you need help, press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time.",
+          "text": "If you need help, press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \'info\' at any time.",
           "buttons": [
             {
               "type": "account_link",
@@ -334,13 +336,13 @@ function handlePostback (sender_psid, received_postback) {
         }
       }
     };
-
   }
-  typingOff();
+  typingOff(sender_psid);
   // send message to ack the postback
   callSendAPI(sender_psid, response);
 }
 
+// not called anymore; interior code put directly in GET handling at top
 function retrieveSTAccessTok (safetrek_auth_code) {
   console.log("RETRIEVING ACCESS TOKEN.");
 
@@ -359,9 +361,7 @@ function retrieveSTAccessTok (safetrek_auth_code) {
     "json": request_body
   }, (err, res, body) => {
     if (!err) {
-
       console.log(body);
-
       safetrek_access_token = body.access_token;
       safetrek_refresh_token = body.refresh_token;
     } else {
@@ -392,13 +392,12 @@ function refreshSafeTrekTok () {
       res.status(200).send('Authorization success.');
     } else {
       console.error("Unable to attain SafeTrek access token:" + err);
-      res.status(500).send('Internal Server Error. Something went wrong. Please try again');
+      res.status(500).send("Internal Server Error. Something went wrong. Please try again");
     }
   });
 }
 
 function updateAlarmLoc (lat, long, alarm_id) {
-
   let request_body = {
     "coordinates": {
       "lat": lat,
@@ -406,7 +405,6 @@ function updateAlarmLoc (lat, long, alarm_id) {
       "accuracy": 5
     }
   }
-
   let request_uri = "https://api-sandbox.safetrek.io/v1/alarms/" + alarm_id + "/locations";
   let auth_string = "Bearer " + safetrek_access_token;
 
@@ -430,11 +428,9 @@ function updateAlarmLoc (lat, long, alarm_id) {
 }
 
 function cancelAlarm (alarm_id) {
-
   let request_body = {
     "status": "CANCELED"
   };
-
   let request_uri = "https://api-sandbox.safetrek.io/v1/alarms/" + alarm_id + "/status";
   let auth_string = "Bearer " + safetrek_access_token;
 
@@ -500,7 +496,6 @@ function generateSafeTrekAlert (services, lat, long) {
 
 // Send response messages via the Send API
 function callSendAPI(sender_psid, response) {
-  // construct message body
   let request_body = {
     "recipient": {
       "id": sender_psid
