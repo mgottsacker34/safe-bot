@@ -134,7 +134,7 @@ function handleMessage (sender_psid, received_message) {
       };
     } else if (received_message.text.toLowerCase() === 'help') {
       response = {
-        "text": "If you need help, press one of the buttons below. For more general information about SafeBot, type \"info\".",
+        "text": "If you need help, press one of the buttons below.",
         "quick_replies": [
           {
             "content_type": "text",
@@ -250,7 +250,7 @@ function handleMessage (sender_psid, received_message) {
         }
       } else {
         response = {
-          "text": "Great! Don't hesitate to reach out if you ever need help."
+          "text": "Great! Don't hesitate to reach out if you ever need help. Learn more about SafeBot by typing\'info\'."
         }
       }
     }
