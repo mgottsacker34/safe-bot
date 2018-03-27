@@ -1,7 +1,6 @@
 'use strict';
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-var self = this;
 // In production, these tokens and alarm details should be saved in a DB keyed on the user's unique PSID.
 let sender_psid;
 let safetrek_access_token;
@@ -453,6 +452,7 @@ function cancelAlarm (alarm_id) {
     if (!err) {
       console.log("ALARM CANCELED.");
       console.log(body);
+      // reset alarm info
       services = [];
       alarm_id = "a";
     } else {
