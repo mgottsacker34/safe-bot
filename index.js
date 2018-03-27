@@ -68,6 +68,7 @@ app.get('/webhook', (req,res) => {
   let safetrek_auth_code = req.query.code;
   let safetrek_refresh_code = req.query.refresh_token;
 
+  // these steps are needed for FB webhook verification
   // Checks if a token and mode is in the query string of the request
   if (mode && token) {
     // Checks that the mode and token sent are correct
@@ -125,7 +126,7 @@ function handleMessage (sender_psid, received_message) {
   if (received_message.text) {
     if (received_message.text.toLowerCase() === 'info') {
       response = {
-        "text": "SafeBot is here to help. If you experience an emergency, you can send \"help\" at any time. We will take you through steps to get the help you need and someone from SafeTrek will contact you. For specific situations, send \"police\", \"fire\", or \"medical\" to send an alert to the police, the fire department, or emergency medical services, respectively."
+        "text": "SafeBot is here to help. If you experience an emergency, type \'help\'. We will send the help you need and someone from SafeTrek will contact you. For specific situations, you can send \'police\', \'fire\', or \'medical\' to send an alert to the police, the fire department, or emergency medical services, respectively."
       };
     } else if (received_message.text.toLowerCase() === 'help') {
       response = {
@@ -157,7 +158,7 @@ function handleMessage (sender_psid, received_message) {
     } else if (received_message.text.toLowerCase() === 'police') {
       services.push("police");
       response = {
-        "text": "Share your location, or type \"fire\" or \"medical\" if you require those services as well.",
+        "text": "Share your location, or type \'fire\' or \"medical\' if you require those services as well.",
         "quick_replies": [
           {
             "content_type": "location"
@@ -168,7 +169,7 @@ function handleMessage (sender_psid, received_message) {
     } else if (received_message.text.toLowerCase() === 'fire') {
       services.push('fire');
       response = {
-        "text": "Share your location, or type \"police\" or \"medical\" if you require those services as well.",
+        "text": "Share your location, or type \'police\' or \'medical\' if you require those services as well.",
         "quick_replies": [
           {
             "content_type": "location"
@@ -179,7 +180,7 @@ function handleMessage (sender_psid, received_message) {
     } else if (received_message.text.toLowerCase() === 'medical') {
       services.push('medical');
       response = {
-        "text": "Share your location, or type \"police\" or \"fire\" if you require those services.",
+        "text": "Share your location, or type \'police\' or \'fire\' if you require those services.",
         "quick_replies": [
           {
             "content_type": "location"
@@ -195,7 +196,7 @@ function handleMessage (sender_psid, received_message) {
           "type": "template",
           "payload": {
             "template_type": "button",
-            "text": "If you need help, press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time.",
+            "text": "If you need help, press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \'info\' at any time.",
             "buttons": [
               {
                 "type": "account_link",
@@ -264,7 +265,7 @@ function handleMessage (sender_psid, received_message) {
       if (!alarm_id) {
         //get the URL of the message attachment
         response = {
-            "text": "Location received. We are sending help. One of our call center employees will contact you in a moment. If you want to cancel this alert, just type \"cancel\".",
+            "text": "Location received. We are sending help. One of our call center employees will contact you in a moment. If you want to cancel this alert, just type \'cancel\'. Type \'location\' to update the alarm's location.",
         };
         console.log("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
         generateSafeTrekAlert(services, lat, long);
@@ -447,13 +448,14 @@ function cancelAlarm (alarm_id) {
     "json": request_body
   }, (err, res, body) => {
     if (!err) {
-      console.log("ALARM POSTED.");
+      console.log("ALARM CANCELED.");
       console.log(body);
       services = [];
     } else {
-      console.error("Unable to post alarm:" + err);
+      console.error("Unable to cancel alarm:" + err);
     }
   });
+  alarm_id = null;
 }
 
 function generateSafeTrekAlert (services, lat, long) {
