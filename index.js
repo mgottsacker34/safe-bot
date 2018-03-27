@@ -1,9 +1,11 @@
 'use strict';
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+// In production, these tokens and alarm details should be saved in a DB keyed on the user's unique PSID.
 let safetrek_access_token;
 let safetrek_refresh_token;
 let services = [];
+let alarm_id;
 
 // Import dependencies and set up http server
 const
@@ -112,6 +114,10 @@ app.get('/webhook', (req,res) => {
 
 // Handle message events
 function handleMessage(sender_psid, received_message) {
+  // set Seen indicator and begin processing
+  markSeen();
+  typingOn();
+
   let response;
 
   // Check if the message contains text
@@ -181,7 +187,7 @@ function handleMessage(sender_psid, received_message) {
       };
 
     } else if (received_message.text.toLowerCase() === 'login') {
-      // user needs to log in again (refresh)
+      // TODO: Use FB's account linking. Not necessary, but could be beneficial.
       let url_string = "https://account-sandbox.safetrek.io/authorize?audience=https://api-sandbox.safetrek.io&client_id=" + process.env.CLIENT_ID + "&scope=openid%20phone%20offline_access&state=statecode&response_type=code&redirect_uri=https://safe-bot.herokuapp.com/webhook";
       response = {
         "attachment": {
@@ -198,10 +204,20 @@ function handleMessage(sender_psid, received_message) {
           }
         }
       };
+    } else if (received_message.text.toLowerCase() === 'cancel') {
+      if (alarm_id) {
+        cancelAlarm(alarm_id);
+        response = {
+          "text": "Alarm canceled."
+        }
+      } else {
+        response = {
+          "text": "There is no alarm to cancel."
+        }
+      }
     }
-    // generic response when keyword is not sent
+    // generic response when keyword is not sent (echo back to user - dev only)
     else {
-      // create payload for basic text message
       response = {
         "text": `You sent the message: "${received_message.text}"`
       }
@@ -226,14 +242,15 @@ function handleMessage(sender_psid, received_message) {
       generateSafeTrekAlert(services, lat, long);
     }
   }
-
+  typingOff();
   // send the response message
   callSendAPI(sender_psid, response);
-
 }
 
 // Handle messaging_postbacks events
 function handlePostback(sender_psid, received_postback) {
+  markSeen();
+  typingOn();
   let response;
 
   // get the payload for the postback
@@ -253,8 +270,9 @@ function handlePostback(sender_psid, received_postback) {
         "type": "template",
         "payload": {
           "template_type": "generic",
+          "text": "Press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time. To start an alert, type \"help\".",
           "elements": [{
-            "title": "Press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time.",
+
             "buttons": [
               {
                 "type": "web_url",
@@ -296,7 +314,7 @@ function handlePostback(sender_psid, received_postback) {
   } else if (payload === 'no_help_wanted') {
 
   }
-
+  typingOff();
   // send message to ack the postback
   callSendAPI(sender_psid, response);
 }
@@ -389,7 +407,7 @@ function updateAlarmLoc(lat, long, alarm_id) {
   });
 }
 
-function cancelAlarm(status) {
+function cancelAlarm(alarm_id) {
 
   let request_body = {
     "status": "CANCELED"
@@ -449,7 +467,8 @@ function generateSafeTrekAlert(services, lat, long) {
      if (!err) {
        console.log("ALARM POSTED.");
        console.log(body);
-       services = [];
+       alarm_id = body.id;
+       services = []; // clear services array for new request
      } else {
        console.error("Unable to post alarm:" + err);
      }
@@ -475,6 +494,72 @@ function callSendAPI(sender_psid, response) {
   }, (err, res, body) => {
     if (!err) {
       console.log('message sent!');
+    } else {
+      console.error("Unable to send message:" + err);
+    }
+  });
+}
+
+function markSeen (sender_psid) {
+  let request_body = {
+    "recipient": {
+      "id": sender_psid
+    }
+  };
+
+  request({
+    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "qs": { "access_token": PAGE_ACCESS_TOKEN },
+    "sending_action": "mark_seen",
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log("marked seen");
+    } else {
+      console.error("Unable to send message:" + err);
+    }
+  });
+}
+
+function typingOn (sender_psid) {
+  let request_body = {
+    "recipient": {
+      "id": sender_psid
+    }
+  };
+
+  request({
+    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "qs": { "access_token": PAGE_ACCESS_TOKEN },
+    "sending_action": "typing_on",
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log("typing on");
+    } else {
+      console.error("Unable to send message:" + err);
+    }
+  });
+}
+
+function typingOff (sender_psid) {
+  let request_body = {
+    "recipient": {
+      "id": sender_psid
+    }
+  };
+
+  request({
+    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "qs": { "access_token": PAGE_ACCESS_TOKEN },
+    "sending_action": "typing_off",
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log("typing off");
     } else {
       console.error("Unable to send message:" + err);
     }
