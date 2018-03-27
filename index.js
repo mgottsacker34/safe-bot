@@ -7,7 +7,7 @@ let sender_psid;
 let safetrek_access_token;
 let safetrek_refresh_token;
 let services = [];
-let alarm_id = "";
+let alarm_id = "a";
 let alarm_loc;
 
 // Import dependencies and set up http server
@@ -269,7 +269,7 @@ function handleMessage (sender_psid, received_message) {
       let lat = received_message.attachments[0].payload.coordinates.lat;
       let long = received_message.attachments[0].payload.coordinates.long;
       // handle case where alarm location has not been set
-      if (alarm_id.len == 0) {
+      if (alarm_id.len < 2) {
         console.log("New:" + alarm_id + " " + alarm_loc);
         //get the URL of the message attachment
         response = {
@@ -454,7 +454,7 @@ function cancelAlarm (alarm_id) {
       console.log("ALARM CANCELED.");
       console.log(body);
       services = [];
-      alarm_id = "";
+      alarm_id = "a";
     } else {
       console.error("Unable to cancel alarm:" + err);
     }
