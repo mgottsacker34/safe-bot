@@ -268,10 +268,10 @@ function handleMessage (sender_psid, received_message) {
       let lat = received_message.attachments[0].payload.coordinates.lat;
       let long = received_message.attachments[0].payload.coordinates.long;
       // handle case where alarm location has not been set
-      if (alarm_id == null) {
+      if (alarm_id == null || alarm_id == undefined) {
         //get the URL of the message attachment
         response = {
-            "text": "Location received. We are sending help. One of our call center employees will contact you in a moment. If you want to cancel this alert, just type \'cancel\'. Type \'location\' to update the alarm's location.",
+            "text": "Location received. We are sending help. One of our call center employees will contact you in a moment. If you want to cancel this alert, just type \'cancel\'. Type \'location\' to update your location.",
         };
         console.log("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
         generateSafeTrekAlert(services, lat, long);
@@ -451,8 +451,8 @@ function cancelAlarm (alarm_id) {
       console.log("ALARM CANCELED.");
       console.log(body);
       services = [];
-      alarm_id = null;
-      alarm_loc = null;
+      self.alarm_id = null;
+      self.alarm_loc = null;
     } else {
       console.error("Unable to cancel alarm:" + err);
     }
