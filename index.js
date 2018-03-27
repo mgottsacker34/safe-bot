@@ -8,7 +8,6 @@ let safetrek_access_token;
 let safetrek_refresh_token;
 let services = [];
 let alarm_id = "a";
-let alarm_loc;
 
 // Import dependencies and set up http server
 const
@@ -269,8 +268,9 @@ function handleMessage (sender_psid, received_message) {
       let lat = received_message.attachments[0].payload.coordinates.lat;
       let long = received_message.attachments[0].payload.coordinates.long;
       // handle case where alarm location has not been set
+      console.log("\n\n" + alarm_id.len + "\n\n")
       if (alarm_id.len < 2) {
-        console.log("New:" + alarm_id + " " + alarm_loc);
+        console.log("New:" + alarm_id);
         //get the URL of the message attachment
         response = {
             "text": "Location received. We are sending help. One of our call center employees will contact you in a moment. If you want to cancel this alert, just type \'cancel\'. Type \'location\' to update your location.",
@@ -278,7 +278,7 @@ function handleMessage (sender_psid, received_message) {
         console.log("***GENERATE ALERT***\nDispatch help to:\nLat: " + lat + "\nLong: " + long);
         generateSafeTrekAlert(services, lat, long);
       } else {
-        console.log("Update:" + alarm_id + " " + alarm_loc);
+        console.log("Update:" + alarm_id);
         // alarm location has already been set, need to update it
         response = {
             "text": "Location updated. We have notified the responders.",
