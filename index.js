@@ -7,7 +7,7 @@ let sender_psid;
 let safetrek_access_token;
 let safetrek_refresh_token;
 let services = [];
-let alarm_id;
+let alarm_id = null;
 let alarm_loc;
 
 // Import dependencies and set up http server
