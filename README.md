@@ -2,9 +2,11 @@
 
 SafeBot is a chatbot for Facebook Messenger that integrates the [SafeTrek API](https://developers.safetrek.io/). It is an always-on and friendly interface the end user can connect with *silently* and without raising alarm or adding stress to the situation.
 
+[Demo video link](https://drive.google.com/file/d/1umafmm1yuSa-6hvK2nZqrBQdNlPnlpnQ/view?usp=sharing)
+
 ## Development
 
-This project is currently under construction. Refer to the [Design Outline](docs/design-outline.md) document to read about SafeBot's plans.
+This project is currently under construction. Refer to the [Design Outline](docs/design-outline.md) document to read about SafeBot's plans. It uses a Express.js backend hosted on a Heroku dyno.
 
 ## Running and testing
 
