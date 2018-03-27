@@ -113,7 +113,7 @@ app.get('/webhook', (req,res) => {
 });
 
 // Handle message events
-function handleMessage(sender_psid, received_message) {
+function handleMessage (sender_psid, received_message) {
   // set Seen indicator and begin processing
   markSeen();
   typingOn();
@@ -248,21 +248,17 @@ function handleMessage(sender_psid, received_message) {
 }
 
 // Handle messaging_postbacks events
-function handlePostback(sender_psid, received_postback) {
+function handlePostback (sender_psid, received_postback) {
   markSeen();
   typingOn();
   let response;
 
   // get the payload for the postback
   let payload = received_postback.payload;
+  console.log(payload);
 
   // set appropriate response
-  if (payload === 'yes') {
-    response = { "text": "Thanks!" };
-  } else if (payload === 'no') {
-    response = { "text": "Sorry about that. Try sending another." };
-  } else if (payload === 'get_started') {
-
+  if (payload === 'get_started') {
     // When get_started is returned, it is the first time the user interacts with SafeBot. Need to log in.
     let url_string = "https://account-sandbox.safetrek.io/authorize?audience=https://api-sandbox.safetrek.io&client_id=" + process.env.CLIENT_ID + "&scope=openid%20phone%20offline_access&state=statecode&response_type=code&redirect_uri=https://safe-bot.herokuapp.com/webhook";
     response = {
@@ -271,15 +267,13 @@ function handlePostback(sender_psid, received_postback) {
         "payload": {
           "template_type": "button",
           "text": "Press the button below to login to SafeTrek. If you want to learn more about what we can do for you, type \"info\" at any time. To start an alert, type \"help\".",
-          "elements": [{
-            "buttons": [
-              {
-                "type": "web_url",
-                "title": "Login",
-                "url": url_string
-              }
-            ]
-          }]
+          "buttons": [
+            {
+              "type": "web_url",
+              "title": "Login",
+              "url": url_string
+            }
+          ]
         }
       }
     };
@@ -304,21 +298,13 @@ function handlePostback(sender_psid, received_postback) {
       }
     };
 
-  } else if (payload === 'police') {
-
-  } else if (payload === 'fire') {
-
-  } else if (payload === 'medical') {
-
-  } else if (payload === 'no_help_wanted') {
-
   }
   typingOff();
   // send message to ack the postback
   callSendAPI(sender_psid, response);
 }
 
-function retrieveSTAccessTok(safetrek_auth_code) {
+function retrieveSTAccessTok (safetrek_auth_code) {
   console.log("RETRIEVING ACCESS TOKEN.");
 
   let request_body = {
@@ -374,7 +360,7 @@ function refreshSafeTrekTok () {
   });
 }
 
-function updateAlarmLoc(lat, long, alarm_id) {
+function updateAlarmLoc (lat, long, alarm_id) {
 
   let request_body = {
     "coordinates": {
@@ -406,7 +392,7 @@ function updateAlarmLoc(lat, long, alarm_id) {
   });
 }
 
-function cancelAlarm(alarm_id) {
+function cancelAlarm (alarm_id) {
 
   let request_body = {
     "status": "CANCELED"
@@ -434,7 +420,7 @@ function cancelAlarm(alarm_id) {
   });
 }
 
-function generateSafeTrekAlert(services, lat, long) {
+function generateSafeTrekAlert (services, lat, long) {
    let police = services.includes('police');
    let fire = services.includes('fire');
    let medical = services.includes('medical');
