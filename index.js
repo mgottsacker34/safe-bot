@@ -255,10 +255,10 @@ function handleMessage (sender_psid, received_message) {
         }
       }
     }
-    // generic response when keyword is not sent (echo back to user - dev only)
+    // generic response when keyword is not sent
     else {
       response = {
-        "text": `You sent the message: "${received_message.text}"`
+        "text": "Hmm...I don't understand that command. Type \'help\' to start an alert. Or, type \'info\' to learn more about SafeTrek."
       }
     }
   } else if (received_message.attachments) {
